@@ -92,11 +92,11 @@ pygments_style = 'sphinx'
 # hackily add the ScrapeMark Pigments lexer
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 try:
-	from sphinx.highlighting import lexers
-	from highlighting import ScrapeMarkLexer
-	lexers['scrapemark'] = ScrapeMarkLexer()
+    from sphinx.highlighting import lexers
+    from highlighting import ScrapeMarkLexer
+    lexers['scrapemark'] = ScrapeMarkLexer()
 except ImportError:
-	pass
+    pass
 
 
 # Options for HTML output

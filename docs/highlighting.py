@@ -30,8 +30,8 @@ class ScrapeMarkLexer(RegexLexer):
             (r'([{}()\[\]+\-*/,:]|[><=]=?)', Operator)
         ],
         'gotofilters': [
-        	(r'(\|)(\s*)([a-zA-Z_][a-zA-Z0-9_]*)', bygroups(Operator, Text, Name.Function)),
-        	(r'\s+', Text, '#pop'),
+            (r'(\|)(\s*)([a-zA-Z_][a-zA-Z0-9_]*)', bygroups(Operator, Text, Name.Function)),
+            (r'\s+', Text, '#pop'),
         ]
     }
         
