@@ -28,4 +28,4 @@ groups = scrape("""
     })
     
 for group in groups:
-    print group
+    print(group)

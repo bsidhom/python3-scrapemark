@@ -16,4 +16,4 @@ links = scrape("""
     url='http://news.ycombinator.com/')
     
 for link in links:
-    print link
+    print(link)

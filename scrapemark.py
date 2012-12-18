@@ -1,47 +1,47 @@
 import re
 import unicodedata
-import urllib, urllib2
-import urlparse
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
+import urllib.parse
 import cgi
-import cookielib
-from htmlentitydefs import name2codepoint
+import http.cookiejar
+from html.entities import name2codepoint
 
 verbose = True
 user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.8.1.3) Gecko/20070309 Firefox/2.0.0.3'
 
 def scrape(pattern, html=None, url=None, get=None, post=None, headers=None, cookie_jar=None):
     if type(pattern) == str:
-        pattern = compile(pattern)
+        pattern = compile_pattern(pattern)
     return pattern.scrape(html, url, get, post, headers, cookie_jar)
     
-def compile(pattern):
+def compile_pattern(pattern):
     return _Pattern(_compile(pattern, True))
     
 def fetch_html(url, get=None, post=None, headers=None, cookie_jar=None):
     if get:
         if type(get) == str:
             get = cgi.parse_qs(get)
-        l = list(urlparse.urlparse(url))
+        l = list(urllib.parse.urlparse(url))
         g = cgi.parse_qs(l[4])
         g.update(get)
-        l[4] = urllib.urlencode(g)
-        url = urlparse.urlunparse(l)
+        l[4] = urllib.parse.urlencode(g)
+        url = urllib.parse.urlunparse(l)
     if post and type(post) != str:
-        post = urllib.urlencode(post)
+        post = urllib.parse.urlencode(post)
     if cookie_jar == None:
-        cookie_jar = cookielib.CookieJar()
+        cookie_jar = http.cookiejar.CookieJar()
     if not headers:
         headers = {'User-Agent': user_agent}
     else:
         if 'User-Agent' not in headers:
             headers['User-Agent'] = user_agent
     if verbose:
-        print 'fetching', url, '...'
-    request = urllib2.Request(url, post, headers)
-    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookie_jar))
+        print('fetching', url, '...')
+    request = urllib.request.Request(url, post, headers)
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookie_jar))
     res = opener.open(request).read()
     if verbose:
-        print 'DONE fetching.'
+        print('DONE fetching.')
     return res
 
 
@@ -55,9 +55,11 @@ class _Pattern:
     
     def scrape(self, html=None, url=None, get=None, post=None, headers=None, cookie_jar=None):
         if cookie_jar == None:
-            cookie_jar = cookielib.CookieJar()
+            cookie_jar = http.cookiejar.CookieJar()
         if html == None:
             html = fetch_html(url, get, post, headers, cookie_jar)
+            # TODO: decide how to handle automatic decoding
+            html = html.decode('utf-8', errors='ignore')
         captures = {}
         if _match(self._nodes, _remove_comments(html), 0, captures, url, cookie_jar) == -1:
             return None
@@ -405,15 +407,15 @@ def _fill_captures(nodes, captures):
             _fill_captures(node[2], captures)
         
 def _apply_filters(s, filters, base_url):
-    if 'html' not in filters and issubclass(type(s), basestring):
+    if 'html' not in filters and issubclass(type(s), str):
         s = _remove_html(s)
     for f in filters:
         if f == 'unescape':
-            if issubclass(type(s), basestring):
+            if issubclass(type(s), str):
                 s = s.decode('string_escape')
         elif f == 'abs':
-            if issubclass(type(s), basestring):
-                s = urlparse.urljoin(base_url, s)
+            if issubclass(type(s), str):
+                s = urllib.parse.urljoin(base_url, s)
         elif f == 'int':
             try:
                 s = int(s)
@@ -445,19 +447,21 @@ def _remove_html(s):
     return s
     
 def _decode_entities(s):
-    if type(s) is not unicode:
-        s = unicode(s, 'utf-8', 'ignore')
+    if type(s) is not str:
+        # this condition should never be met; make it the job of the caller to
+        # decode text (or require chardet to do so automatically)
+        s = str(s, 'utf-8', 'ignore')
         s = unicodedata.normalize('NFKD', s)
     return _entity_re.sub(_substitute_entity, s)
     
 def _substitute_entity(m):
     ent = m.group(2)
     if m.group(1) == "#":
-        return unichr(int(ent))
+        return chr(int(ent))
     else:
         cp = name2codepoint.get(ent)
         if cp:
-            return unichr(cp)
+            return chr(cp)
         else:
             return m.group()
             

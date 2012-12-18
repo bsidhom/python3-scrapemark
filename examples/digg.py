@@ -1,6 +1,6 @@
 import scrapemark
 
-print scrapemark.scrape("""
+print(scrapemark.scrape("""
     {*
         <div class='news-summary'>
         <h3><a href='{{ [links].url }}'>{{ [links].title }}</a></h3>
@@ -11,4 +11,4 @@ print scrapemark.scrape("""
         </div>
     *}
     """,
-    url='http://digg.com/')
+    url='http://digg.com/'))
