@@ -468,7 +468,10 @@ def _substitute_entity(m):
 def _parse_attrs(s):
     attrs = {}
     for m in _attr_re.finditer(s):
-        attrs[m.group(1)] = m.group(3) or m.group(4)
+        value = m.group(3)
+        if value is None:
+            value = m.group(4)
+        attrs[m.group(1)] = value
     return attrs
     
 def _next_tag(s, i, tag_open_re, tag_close_re, depth=1): # returns (tag body, substring index after tag)
